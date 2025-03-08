@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_home.css') }}">
+</head>
+<body>
+    <h1>Chào mừng bạn đã đến với hệ thống</h1>
+    <!-- Nội dung trang chủ -->
+    <div class="container">
+        <h1>Trang thông tin</h1>
+        <p>ID người dùng: {{ user.user_id }}</p>
+        <p>Tên người dùng: {{ user.name }}</p>
+        <p>Ngày sinh: {{ user.DOB}}</p>
+        <p>Địa chỉ: {{ user.Address}}</p>
+        <p>Email: {{ user.Email}}</p>
+        <p>Chức vụ: {{ user.role}}</p>
+    </div>
+</body>
+</html>
