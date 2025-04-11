@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chef Portal - {% if user and user.name %}{{ user.name }}{% else %}Đầu bếp{% endif %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <style>
+        :root {
+            --primary-color: #E57373;
+            --header-bg: #1A1A1A;
+            --body-bg: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #555;
+            --text-muted: #7f8c8d;
+            --text-white: #ffffff;
+            --border-color: #e0e0e0;
+            --card-bg: #ffffff;
+            --card-hover-bg: #fdfdfd;
+            --card-selected-bg: #fff8f8;
+            --card-selected-border: var(--primary-color);
+            --status-waiting-bg: #fffbeb;
+            --status-waiting-text: #b45309;
+            --status-waiting-border: #fde68a;
+            --status-preparing-bg: #eff6ff;
+            --status-preparing-text: #1d4ed8;
+            --status-preparing-border: #bfdbfe;
+            --status-completed-bg: #f0fdf4;
+            --status-completed-text: #15803d;
+            --status-completed-border: #bbf7d0;
+            --status-cancelled-bg: #fef2f2;
+            --status-cancelled-text: #b91c1c;
+            --status-cancelled-border: #fecaca;
+            --button-accept-bg: #22c55e;
+            --button-accept-hover-bg: #16a34a;
+            --button-complete-bg: #3b82f6;
+            --button-complete-hover-bg: #2563eb;
+            --button-cancel-bg: #ef4444;
+            --button-cancel-hover-bg: #dc2626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--body-bg);
+            font-family: 'Inter', sans-serif;
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #ffff;
+            color: #2c3e50;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        header p {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: var(--text-dark);
+            /* font-size: 1.7em; */
+            transition: color 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        header p:hover {
+            color: var(--primary-color);
+        }
+
+        nav {
+            background-color: #2c3e50;
+            padding: 10px 30px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            /* display: flex; */
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding-left: 0;
+            /* Remove default padding */
+        }
+
+        nav ul li a {
+            color: #ffff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: color 0.3s ease;
+            padding: 10px 15px;
+            margin: 5px 8px;
+        }
+
+        nav ul li a:hover {
+            color: #e74c3c;
+        }
+
+        main {
+            flex: 1;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 95%;
+            max-width: 1000px;
+            padding: 40px 50px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+        }
+
+        .container h1.page-title {
+            font-family: 'Lora', serif;
+            font-size: 2.2em;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .container p.subtitle {
+            font-size: 1.1em;
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+
+        .order-list {
+            margin-top: 30px;
+            text-align: left;
+            display: grid;
+            gap: 20px;
+        }
+
+        .order-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: background 0.2s ease, box-shadow 0.3s ease, border-left-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-item:hover {
+            background: var(--card-hover-bg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .order-item.status-waiting {
+            border-left-color: var(--status-waiting-text);
+        }
+
+        .order-item.status-preparing {
+            border-left-color: var(--status-preparing-text);
+        }
+
+        .order-item.status-completed {
+            border-left-color: var(--status-completed-text);
+            opacity: 0.8;
+        }
+
+        .order-item.status-cancelled {
+            border-left-color: var(--status-cancelled-text);
+            opacity: 0.6;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .order-header p {
+            font-size: 1.1em;
+            color: var(--text-dark);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .order-status {
+            font-weight: 600;
+            font-size: 0.9em;
+            padding: 4px 10px;
+            border-radius: 15px;
+            white-space: nowrap;
+        }
+
+        .status-waiting .order-status {
+            background-color: var(--status-waiting-bg);
+            color: var(--status-waiting-text);
+            border: 1px solid var(--status-waiting-border);
+        }
+
+        .status-preparing .order-status {
+            background-color: var(--status-preparing-bg);
+            color: var(--status-preparing-text);
+            border: 1px solid var(--status-preparing-border);
+        }
+
+        .status-completed .order-status {
+            background-color: var(--status-completed-bg);
+            color: var(--status-completed-text);
+            border: 1px solid var(--status-completed-border);
+        }
+
+        .status-cancelled .order-status {
+            background-color: var(--status-cancelled-bg);
+            color: var(--status-cancelled-text);
+            border: 1px solid var(--status-cancelled-border);
+        }
+
+        .order-details {
+            max-height: 0;
+            overflow: hidden;
+            margin-top: 0;
+            padding: 0 15px;
+            background: #fcfcfc;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            font-size: 0.95em;
+            color: var(--text-light);
+            transition: max-height 0.4s ease-out, margin-top 0.4s ease-out, padding 0.4s ease-out;
+        }
+
+        .order-item.selected .order-details {
+            max-height: 500px;
+            margin-top: 15px;
+            padding: 15px;
+        }
+
+        .order-details ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .order-details li {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .order-details li:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .order-details li span.label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-right: 5px;
+        }
+
+        .order-details li span.value {
+            color: var(--text-light);
+        }
+
+        .order-actions {
+            max-height: 0;
+            overflow: hidden;
+            margin-top: 0;
+            padding: 0 15px;
+            gap: 10px;
+            display: flex;
+            justify-content: flex-end;
+            transition: max-height 0.4s ease-out, margin-top 0.4s ease-out, padding 0.4s ease-out;
+        }
+
+        .order-item.selected .order-actions {
+            max-height: 100px;
+            margin-top: 15px;
+            padding: 10px 0 5px 0;
+        }
+
+        .accept-btn,
+        .cancel-btn,
+        .complete-btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .accept-btn:hover,
+        .cancel-btn:hover,
+        .complete-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .accept-btn:active,
+        .cancel-btn:active,
+        .complete-btn:active {
+            transform: translateY(0px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .accept-btn {
+            background: var(--button-accept-bg);
+            color: var(--text-white);
+        }
+
+        .accept-btn:hover {
+            background: var(--button-accept-hover-bg);
+        }
+
+        .complete-btn {
+            background: var(--button-complete-bg);
+            color: var(--text-white);
+        }
+
+        .complete-btn:hover {
+            background: var(--button-complete-hover-bg);
+        }
+
+        .cancel-btn {
+            background: var(--button-cancel-bg);
+            color: var(--text-white);
+        }
+
+        .cancel-btn:hover {
+            background: var(--button-cancel-hover-bg);
+        }
+
+        footer {
+            background: var(--header-bg);
+            color: #B0B0B0;
+            text-align: center;
+            padding: 25px;
+            margin-top: auto;
+            border-top: 3px solid var(--primary-color);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--text-white);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.4em;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 15px;
+                padding: 10px 0;
+                align-items: center;
+            }
+
+            nav ul li a {
+                font-size: 1.1em;
+                padding: 8px 16px;
+            }
+
+            .container {
+                width: 95%;
+                padding: 25px 15px;
+            }
+
+            .container h1.page-title {
+                font-size: 1.8em;
+            }
+
+            .container p.subtitle {
+                font-size: 1em;
+            }
+
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .order-status {
+                align-self: flex-start;
+                margin-top: 5px;
+            }
+
+            .order-details {
+                font-size: 0.9em;
+            }
+
+            .order-actions {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container h1.page-title {
+                font-size: 1.6em;
+            }
+
+            .accept-btn,
+            .cancel-btn,
+            .complete-btn {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <p>Xin chào, {% if user and user.name %}{{ user.name }}{% else %}Khách{% endif %}</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#home">Trang Chủ</a></li>
+            <li><a href="/user/chef_menu/{{user.user_id}}">Thực Đơn</a></li>
+            <li><a href="{{ url_for('user.logout') }}">Đăng Xuất</a></li>
+        </ul>
+    </nav>
+
+    <main>
+
+        <div class="container">
+            <h1 class="page-title">Danh Sách Đơn Hàng</h1>
+            <p class="subtitle">Các đơn hàng cần chuẩn bị sẽ hiển thị tại đây.</p>
+            <div class="order-list" id="orderList">
+                <p>Đang tải danh sách đơn hàng...</p>
+            </div>
+        </div>
+    </main>
+
+
+    <script>
+        let currentOrders = [];
+        let selectedOrderId = null;
+        const orderListContainer = document.getElementById('orderList');
+
+        // --- WebSocket Connection ---
+        const socket = io('http://localhost:5000'); // Adjust to your server URL
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket');
+        });
+
+        // --- Function to map status string to CSS class ---
+        function getStatusClass(statusString) {
+            switch (statusString) {
+                case 'Đang chờ phục vụ': return 'status-waiting';
+                case 'Đang chuẩn bị': return 'status-preparing';
+                case 'Hoàn thành món': return 'status-completed';
+                case 'Hủy món': return 'status-cancelled';
+                default: return '';
+            }
+        }
+
+        // --- Function to Fetch Orders ---
+        function fetchOrders() {
+            fetch('/order/get_orders')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Fetched orders:', data.orders);
+                    if (JSON.stringify(currentOrders) !== JSON.stringify(data.orders)) {
+                        currentOrders = data.orders || [];
+                        displayOrders();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching orders:', error);
+                    if (orderListContainer) {
+                        orderListContainer.innerHTML = '<p style="color: red;">Lỗi khi tải đơn hàng. Vui lòng thử lại.</p>';
+                    }
+                });
+        }
+
+        // --- Function to Display Orders ---
+        function displayOrders() {
+            if (!orderListContainer) return;
+
+            orderListContainer.innerHTML = '';
+
+            if (currentOrders.length === 0) {
+                orderListContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Chưa có đơn hàng mới.</p>';
+                return;
+            }
+
+            currentOrders.forEach(order => {
+                renderOrder(order);
+            });
+        }
+
+        // --- Function to Render a Single Order ---
+        function renderOrder(order) {
+            const existingOrder = document.querySelector(`.order-item[data-order-id="${order.id}"]`);
+            if (existingOrder) {
+                existingOrder.remove(); // Remove if updating
+            }
+
+            const orderItem = document.createElement('div');
+            const statusClass = getStatusClass(order.status);
+            orderItem.classList.add('order-item', statusClass);
+            orderItem.dataset.orderId = order.id;
+
+            const items = order.items || {};
+            const notes = order.note || "Không có ghi chú";
+            // console.log(notes);
+            const itemsHtml = items.length > 0
+                ? items.map(item => `
+                    <li>
+                        <span class="label">Món:</span> <span class="value">${item.name || 'N/A'}</span> -
+                        <span class="label">Số lượng:</span> <span class="value">${item.quantity || 'N/A'}</span>
+                    </li>
+                  `).join('')
+                : '<li><span class="value">Không có chi tiết món ăn trong đơn hàng này.</span></li>';
+
+            let buttonsHtml = '';
+            if (order.status === 'Đang chờ phục vụ') {
+                buttonsHtml = `
+                    <div class="order-actions">
+                        <button type="button" class="accept-btn" data-action="accept">Chấp nhận</button>
+                        <button type="button" class="cancel-btn" data-action="cancel">Hủy</button>
+                    </div>`;
+            } else if (order.status === 'Đang chuẩn bị') {
+                buttonsHtml = `
+                    <div class="order-actions">
+                        <button type="button" class="complete-btn" data-action="complete">Hoàn thành</button>
+                        <button type="button" class="cancel-btn" data-action="cancel">Hủy</button>
+                    </div>`;
+            }
+
+            orderItem.innerHTML = `
+                <div class="order-header">
+                    <p>Đơn ${order.id} - Bàn ${order.table_id || 'N/A'}</p>
+                    <span class="order-status">${order.status || 'N/A'}</span>
+                </div>
+                <div class="order-details">
+                    <ul>
+                        ${itemsHtml}
+                        <li><span class="label">Ghi chú: </strong> ${notes}</span></li>
+                    </ul>
+                </div>
+                ${buttonsHtml}
+            `;
+
+            orderListContainer.insertBefore(orderItem, orderListContainer.firstChild); // Add new orders at the top
+
+            orderItem.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') return;
+                toggleSelection(orderItem, order.id);
+            });
+
+            orderItem.querySelectorAll('.order-actions button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const action = e.target.dataset.action;
+                    handleActionClick(order.id, action);
+                });
+            });
+
+            if (order.id === selectedOrderId) {
+                orderItem.classList.add('selected');
+            }
+        }
+
+        // --- Function to Toggle Order Selection/Details ---
+        function toggleSelection(orderItem, orderId) {
+            const isAlreadySelected = orderItem.classList.contains('selected');
+            document.querySelectorAll('.order-item.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+            if (!isAlreadySelected) {
+                orderItem.classList.add('selected');
+                selectedOrderId = orderId;
+            } else {
+                selectedOrderId = null;
+            }
+        }
+
+        // --- Function to Handle Action Button Clicks ---
+        function handleActionClick(orderId, action) {
+            let newStatus = '';
+            switch (action) {
+                case 'accept': newStatus = 'Đang chuẩn bị'; break;
+                case 'complete': newStatus = 'Hoàn thành'; break;
+                case 'cancel':
+                    if (confirm(`Bạn có chắc muốn hủy đơn hàng #${orderId}?`)) {
+                        newStatus = 'Hủy';
+                    } else { return; }
+                    break;
+                default: console.error('Unknown action:', action); return;
+            }
+            updateOrderStatus(orderId, newStatus);
+        }
+
+        // --- Function to Update Order Status via API ---
+        function updateOrderStatus(orderId, newStatus) {
+            console.log(`Updating order ${orderId} to status: ${newStatus}`);
+            fetch('/order/update_status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_id: orderId, status: newStatus })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errData => {
+                            throw new Error(`Lỗi ${response.status}: ${errData.message || 'Không thể cập nhật trạng thái'}`);
+                        }).catch(() => {
+                            throw new Error(`Lỗi HTTP ${response.status} khi cập nhật trạng thái.`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Update status response:', data.message);
+                    const selectedItem = document.querySelector(`.order-item[data-order-id="${orderId}"]`);
+                    if (selectedItem) {
+                        selectedItem.classList.remove('selected');
+                    }
+                    selectedOrderId = null;
+                    fetchOrders();
+                })
+                .catch(error => {
+                    console.error('Error updating status:', error);
+                    alert(`Lỗi khi cập nhật trạng thái: ${error.message}`);
+                });
+        }
+
+        // --- Handle New Order from WebSocket ---
+        socket.on('new_order', (orderData) => {
+            console.log('🧾 New order received via WebSocket:', orderData);
+
+            const items = Object.entries(orderData.food_items || {})
+                .filter(([key, value]) => parseInt(value) > 0)
+                .map(([key, value]) => {
+                    const foodIdMatch = key.match(/food_items\[(\d+)\]/);
+                    const foodId = foodIdMatch ? foodIdMatch[1] : key; // fallback nếu là JSON
+                    return {
+                        name: `Món ${foodId}`,
+                        quantity: parseInt(value)
+                    };
+                });
+
+            const newOrder = {
+                id: orderData.order_id,
+                table_id: orderData.table_id,
+                status: 'Đang chờ phục vụ',
+                details: { items },
+                notes: orderData.note.trim() || 'Không có ghi chú'
+            };
+
+            // Prevent duplicates
+            if (!currentOrders.some(order => order.id === newOrder.id)) {
+                currentOrders.unshift(newOrder);
+                renderOrder(newOrder);
+            }
+        });
+
+        // --- Initial Load and Periodic Refresh ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchOrders();
+            setInterval(fetchOrders, 30000); // Refresh every 30 seconds as a fallback
+        });
+    </script>
+</body>
+
+</html>

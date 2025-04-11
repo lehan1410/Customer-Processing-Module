@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Reset Cơ bản --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* --- Kiểu dáng Body --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Sử dụng font Inter */
+            background-color: #f4f7f6;
+            /* Màu nền trang nhẹ nhàng (Consistent) */
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            /* Center container */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            /* Add padding for smaller screens */
+        }
+
+        /* --- Kiểu dáng Container --- */
+        .container {
+            max-width: 700px;
+            /* Slightly wider for profile info */
+            width: 100%;
+            /* Responsive width */
+            margin: auto;
+            background: #ffffff;
+            /* Nền trắng (Consistent) */
+            padding: 30px 40px;
+            /* Increased padding */
+            border-radius: 12px;
+            /* Consistent border radius */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            /* Consistent shadow */
+            text-align: left;
+            /* Align text left for readability */
+        }
+
+        /* --- Kiểu dáng Tiêu đề --- */
+        .container h1 {
+            color: #2c3e50;
+            /* Màu tiêu đề chính (Consistent) */
+            font-size: 1.8em;
+            /* Adjusted size */
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+            /* Center heading */
+            border-bottom: 1px solid #eee;
+            /* Add separator */
+            padding-bottom: 15px;
+        }
+
+        /* --- Kiểu dáng Bảng thông tin --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            /* Remove space between borders */
+            margin-top: 20px;
+        }
+
+        /* Remove all cell borders initially */
+        th,
+        td {
+            border: none;
+            padding: 12px 15px;
+            /* Adjusted padding */
+            text-align: left;
+            vertical-align: top;
+            /* Align top for long text */
+            border-bottom: 1px solid #e0e0e0;
+            /* Add bottom border for rows */
+        }
+
+        /* Style for table header cells (Labels) */
+        th {
+            background-color: #f8f9fa;
+            /* Light background for header */
+            font-weight: 600;
+            /* Bolder labels */
+            color: #34495e;
+            /* Darker label color */
+            width: 150px;
+            /* Fixed width for labels */
+        }
+
+        /* Style for table data cells */
+        td {
+            color: #555;
+            /* Slightly lighter text for data */
+        }
+
+        /* Remove bottom border from the last row */
+        tr:last-child th,
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* --- Kiểu dáng cho thông báo lỗi --- */
+        .no-user-message {
+            color: #e74c3c;
+            /* Red color for error */
+            text-align: center;
+            margin-top: 30px;
+            font-weight: 500;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            body {
+                align-items: flex-start;
+                /* Align container top on mobile */
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .container h1 {
+                font-size: 1.5em;
+            }
+
+            th,
+            td {
+                padding: 10px 8px;
+                font-size: 0.95em;
+            }
+
+            /* Optional: Stack table on very small screens */
+            /*
+            th, td {
+                display: block;
+                width: 100%;
+                text-align: left;
+            }
+            th {
+                width: auto;
+                background-color: transparent;
+                font-weight: bold;
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+            td {
+                 border-bottom: 1px solid #e0e0e0;
+                 margin-bottom: 10px; // Add space between stacked items
+            }
+            tr {
+                 display: block;
+                 margin-bottom: 15px;
+                 border-bottom: 2px solid #ccc; // Separator for stacked rows
+                 padding-bottom: 10px;
+            }
+             tr:last-child { border-bottom: none; }
+             tr:last-child td { border-bottom: none; margin-bottom: 0; }
+            */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Thông tin cá nhân</h1>
+        {% if user %}
+        <table>
+            <tr>
+                <th>ID</th>
+                <td>{{ user.user_id }}</td>
+            </tr>
+            <tr>
+                <th>Tên</th>
+                <td>{{ user.name }}</td>
+            </tr>
+            <tr>
+                <th>Ngày sinh</th>
+                <td>{{ user.DOB }}</td>
+            </tr>
+            <tr>
+                <th>Địa chỉ</th>
+                <td>{{ user.Address }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ user.Email }}</td>
+            </tr>
+            <tr>
+                <th>Chức vụ</th>
+                <td>{{ user.role }}</td>
+            </tr>
+        </table>
+        {% else %}
+        <p class="no-user-message">Không tìm thấy thông tin người dùng.</p>
+        {% endif %}
+    </div>
+</body>
+
+</html>

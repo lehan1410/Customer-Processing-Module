@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán - Danh Sách Đơn Hàng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f5f6fa;
+            color: #333;
+            line-height: 1.6;
+            padding-bottom: 80px;
+            /* Add padding to prevent footer overlap */
+        }
+
+        header {
+            background: var(--header-bg);
+            padding: 12px 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 3px solid var(--primary-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        header p {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: var(--text-white);
+            /* font-size: 1.7em; */
+            transition: color 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        header p:hover {
+            color: var(--primary-color);
+        }
+
+        nav {
+            background-color: #2c3e50;
+            padding: 10px 30px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            /* display: flex; */
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding-left: 0;
+            /* Remove default padding */
+        }
+
+        nav ul li a {
+            color: #ffff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: color 0.3s ease;
+            padding: 10px 15px;
+            margin: 5px 8px;
+        }
+
+        nav ul li a:hover {
+            color: #e74c3c;
+        }
+
+        header {
+            background: var(--header-bg);
+            padding: 12px 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 3px solid var(--primary-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        header p {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: var(--text-white);
+            /* font-size: 1.7em; */
+            transition: color 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        header p:hover {
+            color: var(--primary-color);
+        }
+
+        nav {
+            background-color: #2c3e50;
+            padding: 10px 30px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            /* display: flex; */
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding-left: 0;
+            /* Remove default padding */
+        }
+
+        nav ul li a {
+            color: #ffff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: color 0.3s ease;
+            padding: 10px 15px;
+            margin: 5px 8px;
+        }
+
+        nav ul li a:hover {
+            color: #e74c3c;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #e67e22;
+        }
+
+        .page-title {
+            font-family: 'Lora', serif;
+            font-size: 2.1em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-family: 'Lora', serif;
+            font-size: 1.1em;
+            color: #000;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .order-list {
+            font-family: 'Lora', serif;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .order-list p {
+            font-size: 0.95em;
+            color: #666;
+            text-align: center;
+        }
+
+        .order-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            /* Added box-shadow transition */
+            border: 1px solid #ddd;
+            display: flex;
+            /* Use flexbox for layout */
+            justify-content: space-between;
+            /* Space out header and buttons */
+            align-items: center;
+            /* Align items vertically */
+            flex-wrap: wrap;
+            /* Allow wrapping on smaller screens */
+        }
+
+        .order-item:hover {
+            transform: translateY(-3px);
+            /* Slightly reduced hover effect */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* Add shadow on hover */
+        }
+
+        .order-header {
+            /* Removed flex properties, handled by order-item */
+            margin-bottom: 10px;
+            /* Add some space below header if it wraps */
+            flex-grow: 1;
+            /* Allow header to take available space */
+            margin-right: 15px;
+            /* Space between header and buttons */
+        }
+
+        .order-header p {
+            font-size: 16px;
+            font-weight: 600;
+            /* Slightly bolder */
+            color: #e67e22;
+            margin-bottom: 5px;
+            /* Space between lines */
+        }
+
+        .order-status {
+            font-size: 14px;
+            color: #f1c40f;
+            /* Keep yellow for pending */
+            font-weight: 500;
+            padding: 3px 8px;
+            /* Add padding */
+            background-color: #fef9e7;
+            /* Light yellow background */
+            border-radius: 4px;
+            /* Rounded corners */
+            display: inline-block;
+            /* Fit content */
+        }
+
+        /* Hide order details (item list) in the main view */
+        .order-details {
+            display: none;
+            /* Hide by default */
+            width: 100%;
+            /* Take full width when shown (if needed) */
+            margin-top: 10px;
+            /* Add space when shown */
+        }
+
+        .order-details ul {
+            list-style: none;
+            margin-bottom: 15px;
+            padding-left: 0;
+            /* Remove default padding */
+        }
+
+        .order-details li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            /* Slightly smaller font for details */
+        }
+
+        .order-details li:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: 500;
+        }
+
+        .order-details li strong {
+            color: #666;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            /* Removed flex-end, handled by order-item */
+        }
+
+        .confirm-button,
+        .cancel-button {
+            /* Keep styles for potential future use */
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            /* Added transform */
+        }
+
+        .confirm-button:hover,
+        .cancel-button:hover {
+            transform: translateY(-1px);
+            /* Add subtle lift on hover */
+        }
+
+        .confirm-button {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .confirm-button:hover {
+            background-color: #27ae60;
+        }
+
+        .cancel-button {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .cancel-button:hover {
+            background-color: #c0392b;
+        }
+
+        /* --- Popup Styles --- */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            opacity: 0;
+            /* Start hidden for transition */
+            transition: opacity 0.3s ease;
+        }
+
+        .popup-overlay.visible {
+            display: block;
+            opacity: 1;
+        }
+
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            /* Start slightly smaller */
+            background: #FFFFFF;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+            opacity: 0;
+            /* Start hidden for transition */
+            transition: opacity 0.3s ease, transform 0.3s ease;
+
+            /* --- Popup Size Adjustments --- */
+            width: 90vw;
+            /* Responsive width */
+            max-width: 550px;
+            /* Max width for larger screens */
+            padding: 25px;
+            /* Adjusted padding */
+            max-height: 85vh;
+            /* Max height */
+            overflow-y: auto;
+            /* Allow scrolling if content overflows */
+        }
+
+        .popup.visible {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            /* Animate to full size */
+        }
+
+
+        .popup h2 {
+            font-size: 1.6em;
+            /* Slightly smaller */
+            color: #34495e;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .popup h2 i {
+            color: #1abc9c;
+            /* Icon color */
+        }
+
+        .popup h2.error {
+            color: #e74c3c;
+        }
+
+        .popup h2.error i {
+            color: #e74c3c;
+        }
+
+        .popup p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 15px;
+            /* Added margin */
+        }
+
+
+
+        #paymentContent.full .order-details-popup {
+            /* Use a different class to avoid conflict */
+            background: #f9fbfc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #e0e7ff;
+            text-align: left;
+            /* Align text left for details */
+        }
+
+        #paymentContent.full p {
+            font-size: 1.0em;
+            /* Adjusted size */
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #333;
+            /* Darker text */
+        }
+
+        #paymentContent.full p i {
+            color: #1abc9c;
+            width: 16px;
+            /* Fixed width for icons */
+            text-align: center;
+        }
+
+        #paymentContent.full p strong {
+            color: #34495e;
+            /* Darker label */
+            margin-right: 5px;
+        }
+
+
+        #paymentContent.full ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+            /* More space above list */
+            margin-bottom: 0;
+            /* Reset margin */
+        }
+
+        #paymentContent.full li {
+            padding: 10px 5px;
+            /* Adjusted padding */
+            border-bottom: 1px solid #eef2f7;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95em;
+            /* Slightly smaller item text */
+        }
+
+        #paymentContent.full li span:first-child {
+            flex-grow: 1;
+            /* Allow item name to take space */
+            margin-right: 10px;
+            color: #555;
+        }
+
+        #paymentContent.full li span:last-child {
+            font-weight: 500;
+            color: #e67e22;
+            /* Price color */
+            white-space: nowrap;
+            /* Prevent price wrapping */
+        }
+
+
+        #paymentContent.full li:last-child {
+            border-bottom: none;
+        }
+
+        #paymentContent.full .payment-methods {
+            margin-top: 20px;
+            /* Space above payment methods */
+            text-align: left;
+        }
+
+        #paymentContent.full .payment-methods label {
+            font-size: 1.1em;
+            /* Adjusted size */
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: block;
+            color: #34495e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #paymentContent.full .payment-methods label i {
+            color: #1abc9c;
+        }
+
+        #paymentContent.full .payment-methods select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+            color: #333;
+            appearance: none;
+            /* Remove default arrow */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2334495e' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+            /* Custom arrow */
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px 16px;
+            cursor: pointer;
+        }
+
+        #paymentContent.full .payment-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            /* More space above buttons */
+        }
+
+        #paymentContent.full .payment-btn {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: 600;
+            /* Bolder button text */
+            border: none;
+            border-radius: 8px;
+            /* More rounded */
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        #paymentContent.full .payment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+
+        #paymentContent.full #confirmPaymentBtn {
+            background: #1abc9c;
+            color: #fff;
+        }
+
+        #paymentContent.full #confirmPaymentBtn:hover {
+            background: #16a085;
+        }
+
+        #paymentContent.full #cancelPaymentBtn {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        #paymentContent.full #cancelPaymentBtn:hover {
+            background: #c0392b;
+        }
+
+        /* Success Popup Styles */
+        #successPopup {
+            /* Inherits general .popup styles */
+            max-width: 400px;
+            /* Smaller max-width */
+            padding: 30px;
+        }
+
+        #successPopup .success-icon {
+            font-size: 4em;
+            color: #2ecc71;
+            margin-bottom: 20px;
+            animation: bounceIn 0.5s ease;
+        }
+
+        #successPopup p {
+            font-size: 1.2em;
+            color: #34495e;
+            margin-bottom: 25px;
+        }
+
+        #successPopup button {
+            padding: 10px 25px;
+            font-size: 1em;
+            font-weight: 500;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #successPopup button:hover {
+            background-color: #2980b9;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            60% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            /* Reduced padding */
+            position: fixed;
+            /* Keep fixed */
+            bottom: 0;
+            left: 0;
+            /* Ensure it starts from left edge */
+            width: 100%;
+            z-index: 10;
+            /* Ensure it's above body content but below popups */
+        }
+
+        footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 20px auto;
+                /* Reduced margin */
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .order-item {
+                flex-direction: column;
+                /* Stack header and button vertically */
+                align-items: flex-start;
+                /* Align items left */
+            }
+
+            .order-header {
+                margin-right: 0;
+                /* Remove right margin */
+                margin-bottom: 15px;
+                /* Add space below header */
+            }
+
+            .buttons {
+                width: 100%;
+                /* Make button container full width */
+                justify-content: flex-end;
+                /* Align button to the right */
+            }
+
+            .confirm-button {
+                /* Make button slightly smaller */
+                padding: 7px 12px;
+                font-size: 13px;
+            }
+
+
+            .popup {
+                width: 90vw;
+                /* Keep responsive width */
+                padding: 20px;
+                /* Adjust padding */
+            }
+
+            .popup h2 {
+                font-size: 1.4em;
+            }
+
+            #paymentContent.full .payment-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            #paymentContent.full .payment-btn {
+                width: 100%;
+                /* Full width buttons on small screens */
+            }
+
+            #successPopup {
+                width: 85vw;
+            }
+
+            #successPopup .success-icon {
+                font-size: 3em;
+            }
+
+            #successPopup p {
+                font-size: 1.1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 10px 15px;
+            }
+
+            nav {
+                padding: 10px 15px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .order-header p {
+                font-size: 15px;
+            }
+
+            .confirm-button {
+                width: auto;
+            }
+
+            /* Allow button to shrink if needed */
+            .popup h2 {
+                font-size: 1.3em;
+            }
+
+            #paymentContent.full p {
+                font-size: 0.95em;
+            }
+
+            #paymentContent.full li {
+                font-size: 0.9em;
+            }
+
+            #paymentContent.full .payment-methods label {
+                font-size: 1.0em;
+            }
+
+            #paymentContent.full .payment-methods select {
+                font-size: 0.95em;
+                padding: 10px;
+            }
+
+            #paymentContent.full .payment-btn {
+                font-size: 0.95em;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <p>Xin chào, {% if user and user.name %}{{ user.name }}{% else %}Khách{% endif %}</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/user/waiter/{{user.user_id if user else ''}}">Trang Chủ</a></li>
+            <li><a href="#orders">Thực Đơn</a></li>
+            <li><a href="{{ url_for('user.logout') if url_for else '#' }}">Đăng Xuất</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="container">
+            <h1 class="page-title">Danh Sách Đơn Hàng Chờ Thanh Toán</h1>
+            <p class="subtitle">Chọn "Xác Nhận" để xem chi tiết và tiến hành thanh toán.</p>
+            <div class="order-list" id="orderList">
+                <p>Đang tải danh sách đơn hàng...</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="popup-overlay" id="popupOverlay"></div>
+
+    <div class="popup" id="paymentPopup">
+        <h2><i class="fas fa-file-invoice-dollar"></i> Thanh Toán - Đơn hàng #<span id="popupOrderId"></span></h2>
+        <div id="paymentContent" class="payment-content">
+            <p>Đang tải chi tiết hóa đơn...</p>
+        </div>
+    </div>
+
+    <div class="popup" id="successPopup">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <p id="successMessage">Thanh toán thành công!</p>
+        <button id="closeSuccessPopupBtn">Đóng</button>
+    </div>
+
+
+    <footer>
+        <p>&copy; 2024 Nhà Hàng XYZ. Phát triển bởi <a href="#">Tên Bạn</a>.</p>
+    </footer>
+
+    <script>
+        let currentOrderId = null;
+        let currentInvoiceId = null;
+        let currentPaymentId = null; // Store payment ID if available
+
+        // DOM Elements
+        const orderList = document.getElementById('orderList');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const paymentPopup = document.getElementById('paymentPopup');
+        const popupOrderId = document.getElementById('popupOrderId');
+        const paymentContent = document.getElementById('paymentContent');
+        const successPopup = document.getElementById('successPopup');
+        const successMessage = document.getElementById('successMessage');
+        const closeSuccessPopupBtn = document.getElementById('closeSuccessPopupBtn');
+
+
+        // --- WebSocket Connection ---
+        const socket = io('http://localhost:5000'); // Adjust if your server URL is different
+
+        socket.on('connect', () => {
+            console.log('WebSocket Connected');
+        });
+        socket.on('disconnect', () => {
+            console.log('WebSocket Disconnected');
+            // Optionally show a message to the user
+        });
+        socket.on('connect_error', (error) => {
+            console.error('WebSocket Connection Error:', error);
+            // Optionally show a message to the user
+        });
+        // Listen for new invoices needing payment
+        socket.on('send_invoice', (invoiceData) => {
+            console.log("Received new invoice via WebSocket:", invoiceData);
+            // Simple approach: Just refresh the entire list
+            displayOrders();
+            // More advanced: Add the new order dynamically without full refresh
+            // addOrderToList(invoiceData); // You would need to implement this
+            alert(`Có hóa đơn mới #${invoiceData.invoice_id} cho đơn hàng ${invoiceData.order_id} cần thanh toán.`);
+        });
+
+
+        // --- Helper Functions ---
+        function formatCurrency(amount) {
+            const numAmount = Number(amount);
+            if (isNaN(numAmount)) {
+                console.warn("formatCurrency received non-numeric value:", amount);
+                return amount; // Return original value or 'N/A'
+            }
+            return numAmount.toLocaleString('vi-VN');
+        }
+
+        // --- API Call Functions ---
+        async function fetchAPI(url, options = {}) {
+            try {
+                const defaultHeaders = { 'Content-Type': 'application/json' };
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { ...defaultHeaders, ...options.headers },
+                });
+                if (!response.ok) {
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        errorData = { message: response.statusText };
+                    }
+                    console.error(`API Error ${response.status}: ${errorData?.message || response.statusText}`, { url, options, errorData });
+                    throw new Error(errorData?.message || `Lỗi ${response.status}`);
+                }
+                // Handle cases where response might be empty (e.g., 204 No Content)
+                if (response.status === 204) {
+                    return null; // Or return an empty object/array as appropriate
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Lỗi khi gọi API:', { url, options, error });
+                // Re-throw the specific error message if available
+                throw error;
+            }
+        }
+
+
+        async function fetchInvoices() {
+            // This endpoint should return ONLY orders with status indicating they need payment
+            return fetchAPI('/order/get_orders_payment');
+        }
+
+        async function fetchInvoiceDetails(invoiceId) {
+            return fetchAPI(`/payment/invoice/${invoiceId}`);
+        }
+
+        async function fetchOrderDetails(orderId) {
+            // This endpoint returns items and notes for a specific order
+            return fetchAPI(`/order/payment_data/${orderId}`);
+        }
+
+        async function createPayment(invoiceId, paymentMethod, amount) {
+            return fetchAPI('/payment/create_payment', {
+                method: 'POST',
+                body: JSON.stringify({
+                    invoice_id: invoiceId,
+                    payment_method: paymentMethod,
+                    amount: amount
+                }),
+            });
+        }
+
+        async function updatePaymentStatus(paymentId, status) {
+            // Ensure paymentId is valid before calling
+            if (!paymentId || paymentId === 'Không xác định') {
+                console.warn("Attempted to update payment status with invalid paymentId:", paymentId);
+                // Decide if this is an error or should be ignored
+                // For now, let's skip the update if ID is invalid
+                return null; // Indicate skipping
+            }
+            return fetchAPI(`/payment/update_payment_status/${paymentId}`, {
+                method: 'POST',
+                body: JSON.stringify({ status: status }),
+            });
+        }
+
+
+        // --- HTML Generation Functions ---
+        function generatePopupItemsHTML(items) {
+            if (!items || items.length === 0) {
+                return '<li>Không có món nào trong đơn hàng.</li>';
+            }
+            return items.map(item => `
+                <li>
+                    <span>${item.food_name || 'N/A'} (x${item.quantity || 0})</span>
+                    <span>${item.is_extra_cost ? (formatCurrency(item.price * item.quantity) + ' VNĐ') : 'Đã bao gồm'}</span>
+                </li>
+            `).join('');
+        }
+
+        function generateButtonsHTML(orderId, invoiceId) {
+            // Pass invoiceId to the showOrderDetails function
+            return `
+                <div class="buttons">
+                    <button class="confirm-button" onclick="showPaymentPopup('${orderId}', '${invoiceId}')">
+                       <i class="fas fa-receipt"></i> Xác Nhận
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- UI Update Functions ---
+        async function displayOrders() {
+            orderList.innerHTML = '<p>Đang tải danh sách đơn hàng...</p>'; // Show loading state
+            try {
+                const invoices = await fetchInvoices();
+
+                if (!Array.isArray(invoices)) {
+                    console.error("Expected an array of invoices, received:", invoices);
+                    orderList.innerHTML = '<p class="error-message">Lỗi khi tải dữ liệu hóa đơn. Dữ liệu không hợp lệ.</p>';
+                    return;
+                }
+
+                if (invoices.length === 0) {
+                    orderList.innerHTML = '<p>Hiện không có đơn hàng nào cần thanh toán.</p>';
+                    return;
+                }
+
+                orderList.innerHTML = ''; // Clear loading/previous content
+
+                invoices.forEach(invoice => {
+                    const invoiceId = invoice.invoice_id || 'Không xác định';
+                    const orderId = invoice.order_id || 'Không xác định';
+                    const tableId = invoice.table_id || 'N/A';
+                    const statusText = invoice.status === 'pending_payment' ? 'Chờ thanh toán' : (invoice.status || 'N/A'); // Adjust based on actual status values
+
+                    // Don't fetch item details here, only display basic info
+                    const orderItemHTML = `
+                        <div class="order-item" data-order-id="${orderId}" data-invoice-id="${invoiceId}">
+                            <div class="order-header">
+                                <p>Đơn ${orderId} - Bàn ${tableId}</p>
+                                <span class="order-status">${statusText}</span>
+                            </div>
+                            ${generateButtonsHTML(orderId, invoiceId)}
+                        </div>
+                    `;
+                    orderList.insertAdjacentHTML('beforeend', orderItemHTML);
+                });
+
+            } catch (error) {
+                console.error('Lỗi khi hiển thị danh sách hóa đơn:', error);
+                orderList.innerHTML = `<p class="error-message">Không thể tải danh sách đơn hàng. Vui lòng thử lại sau. (${error.message})</p>`;
+            }
+        }
+
+        // --- Popup Handling ---
+        function showPopup(popupElement) {
+            popupOverlay.classList.add('visible');
+            popupElement.classList.add('visible');
+        }
+
+        function hidePopup(popupElement) {
+            popupOverlay.classList.remove('visible');
+            popupElement.classList.remove('visible');
+        }
+
+        function showSuccessPopup(message = "Thao tác thành công!") {
+            successMessage.textContent = message;
+            showPopup(successPopup);
+        }
+
+        function hideSuccessPopup() {
+            hidePopup(successPopup);
+        }
+
+        async function showPaymentPopup(orderId, invoiceId) {
+            console.log(`Attempting to show details for Order: ${orderId}, Invoice: ${invoiceId}`);
+            currentOrderId = orderId;
+            currentInvoiceId = invoiceId;
+
+            if (!currentInvoiceId || currentInvoiceId === 'Không xác định') {
+                console.error(`Invalid Invoice ID provided: ${currentInvoiceId}`);
+                alert('Mã hóa đơn không hợp lệ. Không thể hiển thị chi tiết.');
+                return;
+            }
+
+            // Show loading state in popup
+            popupOrderId.textContent = orderId;
+            paymentContent.innerHTML = '<p>Đang tải chi tiết...</p>';
+            paymentContent.className = 'payment-content'; // Reset classes
+            showPopup(paymentPopup);
+
+            try {
+                // Fetch both invoice and order details in parallel for speed
+                const [invoice, order] = await Promise.all([
+                    fetchInvoiceDetails(currentInvoiceId),
+                    fetchOrderDetails(orderId)
+                ]);
+
+                // Validate responses
+                if (!invoice) throw new Error(`Không tìm thấy chi tiết hóa đơn ${currentInvoiceId}.`);
+                if (!order) throw new Error(`Không tìm thấy chi tiết đơn hàng ${orderId}.`);
+                if (!order.order_items) console.warn(`Đơn hàng ${orderId} không có danh sách món ăn (order_items).`);
+
+                currentPaymentId = invoice.payment_id || null; // Store payment ID if exists
+                const totalAmount = invoice.total_amount ?? 0; // Use nullish coalescing for default
+
+                // Populate popup content
+                paymentContent.classList.add('full'); // Add styling class
+                paymentContent.innerHTML = `
+                    <div class="order-details-popup">
+                        <p><i class="fas fa-file-invoice"></i><strong>Hóa đơn:</strong> ${currentInvoiceId}</p>
+                        <p><i class="fas fa-table"></i><strong>Bàn:</strong> ${invoice.table_id || 'N/A'}</p>
+                        <p><i class="fas fa-box"></i><strong>Gói:</strong> ${order.package_name || 'N/A'}</p>
+                        <p><i class="fas fa-money-bill-wave"></i><strong>Tổng tiền:</strong> ${formatCurrency(totalAmount)} VNĐ</p>
+                        <p><i class="fas fa-clock"></i><strong>Thời gian tạo:</strong> ${invoice.issued_at ? new Date(invoice.issued_at).toLocaleString('vi-VN') : 'N/A'}</p>
+                        <p><i class="fas fa-receipt"></i><strong>Mã thanh toán (nếu có):</strong> ${currentPaymentId || 'Chưa tạo'}</p>
+                        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+                        <strong><i class="fas fa-utensils"></i> Chi tiết món ăn:</strong>
+                        <ul>
+                            ${generatePopupItemsHTML(order.order_items)}
+                        </ul>
+                        ${order.order_note ? `<p style="margin-top: 15px;"><i class="fas fa-sticky-note"></i><strong>Ghi chú:</strong> ${order.order_note}</p>` : ''}
+                    </div>
+                    <div class="payment-methods">
+                        <label for="paymentMethod"><i class="fas fa-wallet"></i> Chọn phương thức thanh toán:</label>
+                        <select id="paymentMethod" name="payment_method">
+                            <option value="cash">Tiền mặt</option>
+                            <option value="card">Thẻ tín dụng/Ngân hàng</option>
+                            <option value="mobile">Ví điện tử (Momo, ZaloPay,...)</option>
+                            <option value="transfer">Chuyển khoản</option>
+                        </select>
+                    </div>
+                    <div class="payment-buttons">
+                        <button class="payment-btn" id="confirmPaymentBtn"><i class="fas fa-check"></i> Xác Nhận Thanh Toán</button>
+                        <button class="payment-btn" id="cancelPaymentBtn"><i class="fas fa-times"></i> Hủy</button>
+                    </div>
+                `;
+
+                // Add event listeners for the new buttons
+                document.getElementById('confirmPaymentBtn').addEventListener('click', handleConfirmPayment);
+                document.getElementById('cancelPaymentBtn').addEventListener('click', () => hidePopup(paymentPopup));
+
+            } catch (error) {
+                console.error('Lỗi khi hiển thị chi tiết thanh toán:', error);
+                paymentContent.innerHTML = `<p class="error-message">Không thể tải chi tiết thanh toán. ${error.message}</p>
+                 <div class="payment-buttons">
+                     <button class="payment-btn" id="cancelPaymentBtn"><i class="fas fa-times"></i> Đóng</button>
+                 </div>`;
+                // Ensure cancel button works even on error
+                document.getElementById('cancelPaymentBtn')?.addEventListener('click', () => hidePopup(paymentPopup));
+            }
+        }
+
+        async function handleConfirmPayment() {
+            const confirmBtn = document.getElementById('confirmPaymentBtn');
+            confirmBtn.disabled = true; // Prevent double clicks
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            try {
+                // 1. Fetch latest invoice details again to get the most recent total_amount
+                const latestInvoice = await fetchInvoiceDetails(currentInvoiceId);
+                if (!latestInvoice) throw new Error("Không thể lấy thông tin hóa đơn mới nhất.");
+                const amountToPay = latestInvoice.total_amount;
+                currentPaymentId = latestInvoice.payment_id || currentPaymentId; // Update payment ID if it changed
+
+                // 2. Create the payment record
+                const paymentResult = await createPayment(currentInvoiceId, paymentMethod, amountToPay);
+                const newPaymentId = paymentResult?.payment_id; // Get the ID from the response
+                if (!newPaymentId) {
+                    console.warn("Không nhận được payment_id sau khi tạo thanh toán.", paymentResult);
+                    // Fallback to existing ID if creation didn't return one but succeeded otherwise
+                    // This depends on your API behavior
+                }
+                const finalPaymentId = newPaymentId || currentPaymentId; // Use the new ID if available
+
+                console.log("Payment created/retrieved:", { paymentResult, finalPaymentId });
+
+                // 3. Update the payment status to 'completed' using the correct payment ID
+                const updateResult = await updatePaymentStatus(finalPaymentId, 1);
+
+                if (updateResult === null && !finalPaymentId) {
+                    console.warn("Skipped updating payment status as payment ID was invalid.");
+                    // Decide if this is acceptable or should be an error
+                } else {
+                    console.log("Payment status updated:", updateResult);
+                }
+
+
+                // 4. Notify via WebSocket
+                socket.emit('payment_completed', {
+                    order_id: currentOrderId,
+                    invoice_id: currentInvoiceId,
+                    payment_id: finalPaymentId,
+                    method: paymentMethod
+                });
+
+                // 5. Update UI
+                hidePopup(paymentPopup);
+                showSuccessPopup(`Đơn hàng ${currentOrderId} đã được thanh toán thành công!`);
+                await displayOrders(); // Refresh the list to remove the paid order
+
+            } catch (error) {
+                console.error('Lỗi khi xác nhận thanh toán:', error);
+                alert(`Có lỗi xảy ra khi thanh toán: ${error.message}`);
+                // Re-enable button on error
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-check"></i> Xác Nhận Thanh Toán';
+            }
+        }
+
+
+        // --- Event Listeners ---
+        popupOverlay.addEventListener('click', () => {
+            // Close whichever popup is currently visible
+            if (paymentPopup.classList.contains('visible')) {
+                hidePopup(paymentPopup);
+            }
+            if (successPopup.classList.contains('visible')) {
+                hidePopup(successPopup);
+            }
+        });
+
+        closeSuccessPopupBtn.addEventListener('click', hideSuccessPopup);
+
+
+        // --- Initial Load ---
+        window.addEventListener('load', displayOrders);
+
+    </script>
+</body>
+
+</html>

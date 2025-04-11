@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Menu</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+            /* Xám nhạt nhẹ */
+            color: #1F2937;
+            /* Xám đậm */
+            /* padding: 10px; */
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background-color: #1A1A1A;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 3px solid #F87171;
+            /* Đỏ nhạt */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        header h1 {
+            font-weight: 700;
+            color: #FFFFFF;
+            font-size: 1.75rem;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+
+        header h1:hover {
+            color: #F87171;
+        }
+
+        /* --- Kiểu dáng Lời chào --- */
+        .greeting {
+            /* Nền trắng */
+            color: #FFFFFF;
+            /* Màu chữ xanh đậm */
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: 500;
+            border-bottom: 1px solid #e0e0e0;
+            /* Đường kẻ mỏng */
+            font-size: 1.1em;
+        }
+
+        .greeting strong {
+            color: #FFFFFF;
+            /* Tên người dùng đậm hơn */
+            font-weight: 600;
+        }
+
+        /* Navbar */
+        nav {
+            background: #FFFFFF;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #E5E7EB;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            font-weight: 600;
+            color: #374151;
+            font-size: 1.1rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: #F87171;
+            background-color: #FEE2E2;
+            /* Nền đỏ nhạt khi hover */
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 40px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            color: #F87171;
+            margin-bottom: 30px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Bảng món ăn */
+        .menu-table {
+            width: 100%;
+            background: #FFFFFF;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #E5E7EB;
+        }
+
+        .menu-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .menu-table th,
+        .menu-table td {
+            padding: 16px 20px;
+            text-align: center;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .menu-table th {
+            background-color: #4B5563;
+            color: #FFFFFF;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .menu-table td {
+            font-size: 1rem;
+            color: #4B5563;
+        }
+
+        .menu-table tr:nth-child(even) {
+            background-color: #F9FAFB;
+        }
+
+        .menu-table tr:hover {
+            background-color: #F3F4F6;
+            /* Xám nhạt khi hover */
+            transition: background-color 0.2s ease;
+        }
+
+        /* Trạng thái */
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status.active {
+            background-color: #D1FAE5;
+            /* Xanh nhạt */
+            color: #10B981;
+        }
+
+        .status.inactive {
+            background-color: #FEE2E2;
+            /* Đỏ nhạt */
+            color: #EF4444;
+        }
+
+        /* Nút toggle */
+        .toggle-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.4);
+        }
+
+        .toggle-btn.active {
+            background-color: #10B981;
+            /* Xanh ngọc */
+        }
+
+        .toggle-btn.active:hover {
+            background-color: #059669;
+        }
+
+        .toggle-btn.inactive {
+            background-color: #EF4444;
+            /* Đỏ cam */
+        }
+
+        .toggle-btn.inactive:hover {
+            background-color: #DC2626;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.4rem;
+            }
+
+            nav ul {
+                gap: 20px;
+            }
+
+            nav ul li a {
+                font-size: 1rem;
+                padding: 6px 12px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .menu-table th,
+            .menu-table td {
+                padding: 12px 15px;
+                font-size: 0.95rem;
+            }
+
+            .toggle-btn {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .menu-table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .menu-table th,
+            .menu-table td {
+                min-width: 120px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <p class="greeting">Xin chào, <strong>{{ user.name }}</strong>!</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/user/chef/{{user.user_id}}">Trang Chủ</a></li>
+            <li><a href="">Thực Đơn</a></li>
+            <li><a href="{{ url_for('user.logout') }}">Đăng Xuất</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <h1>Quản lý Menu</h1>
+        <div class="menu-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên món</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in menu_items %}
+                    <tr>
+                        <td>{{ item.food_name }}</td>
+                        <td>
+                            <span class="status {% if item.status == 1 %}active{% else %}inactive{% endif %}"
+                                id="status-{{ item.food_id }}">
+                                {% if item.status == 1 %}Hiện{% else %}Ẩn{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="toggle-btn {% if item.status == 1 %}active{% else %}inactive{% endif %}"
+                                data-food-id="{{ item.food_id }}" data-status="{{ item.status }}">
+                                {% if item.status == 1 %}Tắt{% else %}Bật{% endif %}
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".toggle-btn").click(function () {
+                let button = $(this);
+                let foodId = button.data("food-id");
+                let currentStatus = parseInt(button.data("status")); // Ép kiểu thành số nguyên
+                let newStatus = currentStatus === 1 ? 0 : 1; // Đảo trạng thái
+
+                console.log("Food ID:", foodId, "Current Status:", currentStatus, "New Status:", newStatus);
+
+                $.post("/user/chef/update_status", { food_id: foodId, status: newStatus })
+                    .done(function (response) {
+                        console.log("Response from server:", response); // Kiểm tra phản hồi từ server
+
+                        button.data("status", newStatus); // Cập nhật trạng thái mới
+                        let statusText = newStatus === 1 ? "Hiện" : "Ẩn";
+                        let buttonText = newStatus === 1 ? "Tắt" : "Bật";
+
+                        // Cập nhật nội dung nút và trạng thái
+                        button.text(buttonText)
+                            .removeClass(newStatus === 1 ? "inactive" : "active")
+                            .addClass(newStatus === 1 ? "active" : "inactive");
+
+                        $("#status-" + foodId).text(statusText)
+                            .removeClass(newStatus === 1 ? "inactive" : "active")
+                            .addClass(newStatus === 1 ? "active" : "inactive");
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX Error:", textStatus, errorThrown); // Ghi log lỗi AJAX
+                        alert("Lỗi khi cập nhật trạng thái! " + errorThrown);
+                    });
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>

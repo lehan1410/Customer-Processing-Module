@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Reset Cơ bản --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* --- Kiểu dáng Body --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Kiểu dáng Thanh điều hướng (Navbar) --- */
+        .navbar {
+            background-color: #2c3e50;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar a {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 12px 18px;
+            display: inline-block;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.95em;
+            border-radius: 4px;
+            margin: 5px 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #34495e;
+            color: #ffffff;
+        }
+
+        /* --- Kiểu dáng Lời chào --- */
+        .greeting {
+            background-color: #ffffff;
+            color: #34495e;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: 500;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 1.1em;
+        }
+
+        .greeting strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        /* --- Kiểu dáng Container Nội dung chính --- */
+        .container {
+            flex-grow: 1;
+            padding: 40px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .container p {
+            color: #555;
+            font-size: 1.1em;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        /* --- Kiểu dáng cho Admin Dashboard --- */
+        .admin-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .dashboard-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: left;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card h2 {
+            color: #2c3e50;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-card p {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+
+        .dashboard-card a {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #2c3e50;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .dashboard-card a:hover {
+            background-color: #34495e;
+        }
+
+        .dashboard-card .stat {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1abc9c;
+            margin-bottom: 10px;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .navbar {
+                justify-content: space-around;
+            }
+
+            .navbar a {
+                padding: 10px 12px;
+                margin: 5px;
+                font-size: 0.9em;
+            }
+
+            .container h1 {
+                font-size: 1.8em;
+            }
+
+            .container p {
+                font-size: 1em;
+            }
+
+            .greeting {
+                font-size: 1em;
+                padding: 12px 15px;
+            }
+
+            .admin-dashboard {
+                grid-template-columns: 1fr;
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <p class="greeting">Xin chào, <strong>{{ user.name }}</strong>!</p>
+
+    <div class="navbar">
+        <a href="{{ url_for('user.profile', user_id=user.user_id) }}">Xem Thông tin</a>
+        <a href="/user/waiter/{{user.user_id}}">Tạo đơn hàng</a>
+        <a href="/user/payment/{{user.user_id}}">Thanh toán cho khách hàng</a>
+        <a href="{{ url_for('payment.get_invoices') }}">Lịch sử Phiếu tính tiền</a>
+        <a href="{{ url_for('payment.get_invoices') }}">Tổng hợp Phiếu tính tiền</a>
+        <a href="{{ url_for('user.logout') }}">Đăng Xuất</a>
+    </div>
+
+    <div class="container">
+        <h1>Bảng Điều Khiển Quản Trị</h1>
+        <p>Quản lý toàn bộ hoạt động của nhà hàng từ đây.</p>
+        <div class="admin-dashboard">
+            <!-- Card Thống kê Đơn hàng -->
+            <div class="dashboard-card">
+                <h2>Đơn Hàng Hôm Nay</h2>
+                <div class="stat">{{ today_orders_count }}</div>
+                <p>Xem danh sách và trạng thái các đơn hàng trong ngày.</p>
+                <a href="/admin/orders">Xem Chi Tiết</a>
+            </div>
+
+            <!-- Card Quản lý Người dùng -->
+            <div class="dashboard-card">
+                <h2>Quản Lý Người Dùng</h2>
+                <div class="stat">{{ user_count }}</div>
+                <p>Thêm, sửa, xóa thông tin nhân viên và quản trị viên.</p>
+                <a href="/admin/users">Quản Lý</a>
+            </div>
+
+            <!-- Card Báo cáo Doanh Thu -->
+            <div class="dashboard-card">
+                <h2>Doanh Thu Tháng</h2>
+                <div class="stat">{{ "{:,.0f}".format(monthly_revenue) }} VNĐ</div>
+                <p>Xem báo cáo doanh thu chi tiết theo ngày, tuần, tháng.</p>
+                <a href="/admin/reports">Xem Báo Cáo</a>
+            </div>
+
+            <!-- Card Quản lý Menu -->
+            <div class="dashboard-card">
+                <h2>Quản Lý Menu</h2>
+                <div class="stat">{{ food_count }}</div>
+                <p>Cập nhật thực đơn, giá cả và các gói dịch vụ.</p>
+                <a href="/admin/menu">Quản Lý</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
